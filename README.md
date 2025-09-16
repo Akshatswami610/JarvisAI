@@ -1,6 +1,7 @@
 # Jarvis AI - Voice Assistant (Python Backend)
 
 A modular and extensible offline-first Python voice assistant that listens to your commands and performs smart tasks — just say "Hey Jarvis" and get going.
+<img width="1919" height="897" alt="image" src="https://github.com/user-attachments/assets/9fa9b9c7-155b-43e2-add7-53724c708ec6" />
 
 ---
 
