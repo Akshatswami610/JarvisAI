@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jarvis AI - Voice Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+            z-index: 10;
+        }
+
+        .jarvis-logo {
+            font-size: 3.5rem;
+            font-weight: 300;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #00d4ff, #00b4d8, #0077b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #8892b0;
+            margin-bottom: 3rem;
+            font-weight: 300;
+        }
+
+        .voice-container {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .voice-button {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 3px solid #00d4ff;
+            background: linear-gradient(45deg, rgba(0, 212, 255, 0.1), rgba(0, 180, 216, 0.1));
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .voice-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.4);
+        }
+
+        .voice-button.listening {
+            animation: pulse 1.5s ease-in-out infinite;
+            border-color: #ff6b6b;
+            box-shadow: 0 0 30px rgba(255, 107, 107, 0.4);
+        }
+
+        .voice-button.processing {
+            animation: spin 1s linear infinite;
+            border-color: #ffd93d;
+            box-shadow: 0 0 30px rgba(255, 217, 61, 0.4);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .mic-icon {
+            font-size: 2.5rem;
+            color: #00d4ff;
+            transition: color 0.3s ease;
+        }
+
+        .voice-button.listening .mic-icon {
+            color: #ff6b6b;
+        }
+
+        .voice-button.processing .mic-icon {
+            color: #ffd93d;
+        }
+
+        .status-text {
+            margin-top: 1rem;
+            font-size: 1rem;
+            color: #8892b0;
+            min-height: 1.5rem;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            align-items: center;
+        }
+
+        .text-input {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 25px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #ffffff;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .text-input:focus {
+            border-color: #00d4ff;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+        }
+
+        .text-input::placeholder {
+            color: #8892b0;
+        }
+
+        .send-btn {
+            padding: 1rem 1.5rem;
+            background: linear-gradient(45deg, #00d4ff, #00b4d8);
+            border: none;
+            border-radius: 25px;
+            color: white;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .output-container {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 15px;
+            padding: 1.5rem;
+            min-height: 120px;
+            text-align: left;
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .output-text {
+            color: #e6f1ff;
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .control-btn {
+            padding: 0.5rem 1rem;
+            background: rgba(0, 212, 255, 0.2);
+            border: 1px solid rgba(0, 212, 255, 0.5);
+            border-radius: 20px;
+            color: #00d4ff;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: rgba(0, 212, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        #stopBtn {
+            background: rgba(255, 107, 107, 0.13);
+            border-color: #ff6b6b;
+            color: #ff6b6b;
+        }
+        #stopBtn:hover {
+            background: rgba(255, 107, 107, 0.23);
+        }
+
+        .background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(0, 212, 255, 0.4);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+        }
+
+        .error {
+            color: #ff6b6b;
+        }
+
+        .success {
+            color: #51cf66;
+        }
+    </style>
+</head>
+<body>
+    <div class="background-animation" id="particles"></div>
+
+    <div class="container">
+        <h1 class="jarvis-logo">JARVIS</h1>
+        <p class="subtitle">AI Voice Assistant</p>
+
+        <div class="voice-container">
+            <div class="voice-button" id="voiceBtn" onclick="toggleVoiceRecording()">
+                <div class="mic-icon">🎤</div>
+            </div>
+            <div class="status-text" id="statusText">Click the microphone to start</div>
+        </div>
+
+        <div class="input-container">
+            <input type="text" id="textInput" class="text-input" placeholder="Or type your command here..." onkeypress="handleKeyPress(event)" />
+            <button class="send-btn" onclick="sendTextCommand()">Send</button>
+        </div>
+
+        <div class="output-container">
+            <div class="output-text" id="outputText">Hello! I'm Jarvis, your AI assistant. You can speak to me by clicking the microphone or type your commands.</div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn" onclick="clearOutput()">Clear</button>
+            <button class="control-btn" onclick="toggleSpeech()" id="speechToggle">🔊 Speech On</button>
+            <button class="control-btn" onclick="stopCommand()" id="stopBtn">⏹ Stop</button>
+        </div>
+    </div>
+
+    <script>
+        let isListening = false;
+        let recognition = null;
+        let speechEnabled = true;
+
+        // Initialize speech recognition
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = function () {
+                isListening = true;
+                updateVoiceButton();
+                updateStatus("Listening...");
+            };
+
+            recognition.onresult = function (event) {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('textInput').value = transcript;
+                updateStatus(`You said: "${transcript}"`);
+                sendCommand(transcript);
+            };
+
+            recognition.onerror = function (event) {
+                updateStatus("Sorry, I couldn't hear that clearly. Please try again.", "error");
+                isListening = false;
+                updateVoiceButton();
+            };
+
+            recognition.onend = function () {
+                isListening = false;
+                updateVoiceButton();
+            };
+        } else {
+            updateStatus("Voice recognition not supported in this browser", "error");
+        }
+
+        function toggleVoiceRecording() {
+            if (!recognition) {
+                updateStatus("Voice recognition not available", "error");
+                return;
+            }
+
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        }
+
+        function updateVoiceButton() {
+            const btn = document.getElementById('voiceBtn');
+            btn.className = 'voice-button';
+
+            if (isListening) {
+                btn.classList.add('listening');
+            }
+        }
+
+        function updateStatus(message, type = '') {
+            const statusEl = document.getElementById('statusText');
+            statusEl.textContent = message;
+            statusEl.className = 'status-text ' + type;
+        }
+
+        async function sendCommand(command) {
+            if (!command.trim()) return;
+
+            const btn = document.getElementById('voiceBtn');
+            btn.classList.add('processing');
+            updateStatus("Processing...");
+
+            try {
+                // Replace this with your actual API endpoint
+                const response = await fetch("/command", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ command: command })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                displayResponse("Jarvis: " + data.response);
+
+                // Text-to-speech
+                if (speechEnabled) {
+                    speakResponse(data.response);
+                }
+
+                updateStatus("Command processed successfully", "success");
+
+            } catch (error) {
+                console.error('Error:', error);
+                const errorMsg = "Sorry, I'm having trouble connecting to my systems. Please check your connection.";
+                displayResponse("Jarvis: " + errorMsg);
+                updateStatus("Connection error", "error");
+
+                if (speechEnabled) {
+                    speakResponse(errorMsg);
+                }
+            }
+
+            btn.classList.remove('processing');
+            document.getElementById('textInput').value = '';
+        }
+
+        function sendTextCommand() {
+            const command = document.getElementById('textInput').value;
+            sendCommand(command);
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendTextCommand();
+            }
+        }
+
+        function displayResponse(text) {
+            document.getElementById('outputText').innerHTML = text;
+        }
+
+        function speakResponse(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.9;
+                utterance.pitch = 1;
+                utterance.volume = 0.8;
+
+                // Try to use a more robotic voice if available
+                const voices = speechSynthesis.getVoices();
+                const preferredVoice = voices.find(voice =>
+                    voice.name.includes('Microsoft David') ||
+                    voice.name.includes('Google UK English Male') ||
+                    voice.name.toLowerCase().includes('male')
+                );
+
+                if (preferredVoice) {
+                    utterance.voice = preferredVoice;
+                }
+
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        function clearOutput() {
+            document.getElementById('outputText').innerHTML = "Output cleared. How can I help you?";
+            document.getElementById('textInput').value = '';
+            updateStatus("Ready for new command");
+        }
+
+        function toggleSpeech() {
+            speechEnabled = !speechEnabled;
+            const btn = document.getElementById('speechToggle');
+            btn.innerHTML = speechEnabled ? '🔊 Speech On' : '🔇 Speech Off';
+            updateStatus(speechEnabled ? "Speech enabled" : "Speech disabled");
+        }
+
+        function stopCommand() {
+            // Stop voice recognition if active
+            if (recognition && isListening) {
+                recognition.stop();
+                updateStatus("Voice command stopped by user.");
+            }
+            // Stop text-to-speech if active
+            if ('speechSynthesis' in window && speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+                updateStatus("Speech stopped by user.");
+            }
+            // Immediate user feedback
+            displayResponse("Command stopped.");
+        }
+
+        // Create floating particles animation
+        function createParticles() {
+            const container = document.getElementById('particles');
+
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // Initialize
+        createParticles();
+
+        // Load voices when available
+        if ('speechSynthesis' in window) {
+            speechSynthesis.onvoiceschanged = function () {
+                // Voices are now loaded
+            };
+        }
+    </script>
+</body>
+</html>

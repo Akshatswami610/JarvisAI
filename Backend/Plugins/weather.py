@@ -1,26 +1,26 @@
+import os
 import requests
-from Core.config import WEATHER_API_KEY
-from Core.speaker import speak
+from dotenv import load_dotenv
 
+# Load secrets
+load_dotenv()
+WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
 
-def get_weather(city):
-    url = f"https://api.weatherapi.com/v1/current.json?key={WEATHER_API_KEY}&q={city}&aqi=no"
-
+def get_weather(city: str) -> str:
     try:
-        response = requests.get(url)
-        response.raise_for_status()  # Raise an HTTPError for bad responses (4xx or 5xx)
-        data = response.json()
+        if not WEATHER_API_KEY:
+            return "Weather API key is missing. Please check your .env file."
 
-        if "current" in data:
-            condition = data['current']['condition']['text']
-            temp = data['current']['temp_c']
-            speak(f"It is {condition} with {temp} degrees Celsius in {city}.")
-        else:
-            speak(f"Sorry, I couldn't retrieve weather data for {city}.")
+        url = f"http://api.weatherapi.com/v1/current.json?key={WEATHER_API_KEY}&q={city}&aqi=no"
+        response = requests.get(url).json()
 
-    except requests.exceptions.RequestException as e:
-        speak("There was a problem connecting to the weather service.")
-        print(f"[Error] {e}")
-    except KeyError as e:
-        speak("There was a problem interpreting the weather data.")
-        print(f"[KeyError] Missing field: {e}")
+        if "error" in response:
+            return f"Error: {response['error']['message']}"
+
+        location = response["location"]["name"]
+        temp = response["current"]["temp_c"]
+        condition = response["current"]["condition"]["text"]
+
+        return f"The weather in {location} is {condition} with {temp}°C."
+    except Exception as e:
+        return f"Error fetching weather: {e}"
